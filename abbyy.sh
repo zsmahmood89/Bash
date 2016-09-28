@@ -2,34 +2,33 @@
 
 #Initialize 
 rawsource="/Users/Z/Desktop/tempsource"
-indir="/Users/Z/Desktop/temp"
-dest="/Users/Z/Desktop/abby_ocr"
-final="/Users/Z/Desktop/abby_ocr_text"
+tododir="/Users/Z/Desktop/temp"
+rundir="/Users/Z/Desktop/abby_ocr"
+textdir="/Users/Z/Desktop/abby_ocr_text"
+errdir="/Users/Z/Desktop/temperrs"
 ext=".txt"
 
 #If you really want to change default values
 DefMinutesPerPDF=7
 DefMaxIterations=5
 
-cd $rawsource
+
 #Argument defaults
-totalfiles=`ls *.pdf | wc -l`
-ARG1=${1:-$totalfiles}
-ARG2=${2:-$DefMinutesPerPDF}
-ARG3=${3:-$DefMaxIterations}
+ARG1=${1:-$DefMinutesPerPDF}
+ARG1=${2:-$DefMaxIterations}
 
 
 #CODE
 
-#Compile pdfs from rawsource and copy them in indir
-numfiles=$((ARG1))
-echo "Copying $numfiles to input for OCR attempts"
-find *.pdf | head -$numfiles |xargs -I % cp % $indir
+#Compile pdfs from rawsource and copy them in tododir
+cd $rawsource
+echo "Copying ALL sourcefiles to input for OCR attempts"
+find *.pdf | xargs -I % cp % $tododir
 
 #Go to input directory. Everything from here on out starts from here.
-cd $indir
-killtime=$((ARG2 * 4))
-maxiterations=$((ARG3))
+cd $tododir
+killtime=$((ARG1 * 4))
+maxiterations=$((ARG2))
 pdfcount=`ls -1 *.pdf 2>/dev/null | wc -l` #count of pdf files in input dir
 
 #Start the loop.
@@ -43,10 +42,10 @@ while [ $pdfcount != 0 ]
 				fraw=$(basename "$file")
 				fname="${fraw%.*}"
 				echo "copying ${file}"
-				scp "${file}" "$dest"
+				scp "${file}" "$rundir"
 				counter=0
 				err=0
-				until [ -e "$final/$fname$ext" ]
+				until [ -e "$textdir/$fname$ext" ]
 					do
 						if [ $counter -eq $killtime ]
 							then
@@ -63,7 +62,7 @@ while [ $pdfcount != 0 ]
 						rm "${file}"
 					else
 						echo "Error with ${file}"
-						rm "$dest/${file}"
+						rm "$rundir/${file}"
 						killall "FineReader"
 						sleep 20s
 				fi
@@ -74,6 +73,11 @@ while [ $pdfcount != 0 ]
 		if [ $iterations -eq $maxit ]
 			then
 				echo "WARNING: Max iterations reached, remaining PDFs were not completed"
+				echo "..."
+				echo "Copying non-OCRed PDFs to err directory."
+				find *.pdf | xargs -I % cp % $errdir
+				echo "..."
+				echo "If you want to try these again, delete all from SOURCE and move PDFs in errdir to SOURCE"
 				exit 1
 		fi
 	done
