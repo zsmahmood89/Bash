@@ -1,22 +1,39 @@
 #!/bin/bash
 
-#Argument defaults
-ARG1=${1:-7}
-ARG2=${2:-5}
-
 #Initialize 
-source="/Users/Z/Desktop/temp"
+rawsource="/Users/Z/Desktop/tempsource"
+indir="/Users/Z/Desktop/temp"
 dest="/Users/Z/Desktop/abby_ocr"
 final="/Users/Z/Desktop/abby_ocr_text"
 ext=".txt"
-iterations=0
+
+#If you really want to change default values
+DefMinutesPerPDF=7
+DefMaxIterations=5
+
+cd $rawsource
+#Argument defaults
+totalfiles=`ls *.pdf | wc -l`
+ARG1=${1:-$totalfiles}
+ARG2=${2:-$DefMinutesPerPDF}
+ARG3=${3:-$DefMaxIterations}
+
 
 #CODE
-killtime=$((ARG1 * 4))
-maxiterations=$((ARG2))
-pdfcount=`ls -1 *.pdf 2>/dev/null | wc -l` #count of pdf files in input dir
-cd $source
 
+#Compile pdfs from rawsource and copy them in indir
+numfiles=$((ARG1))
+echo "Copying $numfiles to input for OCR attempts"
+find *.pdf | head -$numfiles |xargs -I % cp % $indir
+
+#Go to input directory. Everything from here on out starts from here.
+cd $indir
+killtime=$((ARG2 * 4))
+maxiterations=$((ARG3))
+pdfcount=`ls -1 *.pdf 2>/dev/null | wc -l` #count of pdf files in input dir
+
+#Start the loop.
+iterations=0
 while [ $pdfcount != 0 ]
 	do
 		iterations=$((iterations+1))
@@ -25,6 +42,7 @@ while [ $pdfcount != 0 ]
 			do
 				fraw=$(basename "$file")
 				fname="${fraw%.*}"
+				echo "copying ${file}"
 				scp "${file}" "$dest"
 				counter=0
 				err=0
@@ -41,10 +59,13 @@ while [ $pdfcount != 0 ]
 					done
 				if [ $err == 0 ]
 					then
-						echo "${file}"
-						rm "$dest/${file}"
+						echo "completed ${file}"
+						rm "${file}"
 					else
-						echo "Ret ${file}"
+						echo "Error with ${file}"
+						rm "$dest/${file}"
+						killall "FineReader"
+						sleep 20s
 				fi
 				sleep 3s
 			done
