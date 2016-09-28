@@ -1,18 +1,26 @@
 #!/bin/bash
 
+#Argument defaults
 ARG1=${1:-7}
+ARG2=${2:-5}
 
+#Initialize 
 source="/Users/Z/Desktop/temp"
 dest="/Users/Z/Desktop/abby_ocr"
 final="/Users/Z/Desktop/abby_ocr_text"
 ext=".txt"
-killtime=$((ARG1 * 4))
-pdfcount=`ls -1 *.pdf 2>/dev/null | wc -l` #count of pdf files in input dir
+iterations=0
 
+#CODE
+killtime=$((ARG1 * 4))
+maxiterations=$((ARG2))
+pdfcount=`ls -1 *.pdf 2>/dev/null | wc -l` #count of pdf files in input dir
 cd $source
 
-while [ $pdfcount != 0]
+while [ $pdfcount != 0 ]
 	do
+		iterations=$((iterations+1))
+		echo "Iteration $iterations"
 		for file in *.pdf
 			do
 				fraw=$(basename "$file")
@@ -22,7 +30,7 @@ while [ $pdfcount != 0]
 				err=0
 				until [ -e "$final/$fname$ext" ]
 					do
-						if [ $counter -eq killtime ]
+						if [ $counter -eq $killtime ]
 							then
 								err=1
 								break
@@ -36,13 +44,13 @@ while [ $pdfcount != 0]
 						echo "${file}"
 						rm "$dest/${file}"
 					else
-						echo "Will return to ${file}"
+						echo "Ret ${file}"
 				fi
 				sleep 3s
 			done
 
 		pdfcount=`ls -1 *.pdf 2>/dev/null | wc -l`
-		if [ $iterations -eq maxit ]
+		if [ $iterations -eq $maxit ]
 			then
 				echo "WARNING: Max iterations reached, remaining PDFs were not completed"
 				exit 1
