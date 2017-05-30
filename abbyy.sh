@@ -15,7 +15,7 @@ DefMaxIterations=5
 
 #Argument defaults
 ARG1=${1:-$DefMinutesPerPDF}
-ARG1=${2:-$DefMaxIterations}
+ARG2=${2:-$DefMaxIterations}
 
 
 #CODE
