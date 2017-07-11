@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #Initialize 
-rawsource="/Users/Z/Desktop/tempsource"
-tododir="/Users/Z/Desktop/temp"
+rawsource="/Users/Z/Desktop/temp/pre31"
+tododir="/Users/Z/Desktop/temp/todo"
 rundir="/Users/Z/Desktop/abby_ocr"
 textdir="/Users/Z/Desktop/abby_ocr_text"
 errdir="/Users/Z/Desktop/temperrs"
 ext=".txt"
 
 #If you really want to change default values
-DefMinutesPerPDF=7
+DefMinutesPerPDF=45
 DefMaxIterations=5
 
 
@@ -50,6 +50,7 @@ while [ $pdfcount != 0 ]
 						if [ $counter -eq $killtime ]
 							then
 								err=1
+								echo "Kill time reached on ${file} at ${counter} equals ${killtime}"
 								break
 							else
 								sleep 15s
